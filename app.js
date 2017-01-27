@@ -2,6 +2,7 @@ const prompt = require("prompt");
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
+//TODO: export mysql stuff so it's all dri
 
 var connection = mysql.createConnection({
     host: "localhost",
