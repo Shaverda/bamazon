@@ -38,21 +38,31 @@ var purchase_items = () => {
                 console.log("Error. Insufficient Quantity. Purchase cancelled.");
             } else {
                 var new_quantity = res[0].stock_quantity - product.quantity;
-                update_database(product.id, new_quantity, res[0].price, product.quantity);
+                update_database(product.id, new_quantity, res[0].price, product.quantity, res[0].product_sales, res[0].department_name);
             };
         })
     })
 }
-var update_database = (id, new_quantity, price, quantity_purchased) => {
+
+var update_database = (id, new_quantity, price, quantity_purchased, sales_thus_far, department) => {
+    var total_sales = sales_thus_far + (price * quantity_purchased);
+    connection.query("select * from departments where department_name=?", [department], function(err, res) {
+        var total_department_sales = res[0].total_sales + total_sales;
+        connection.query("update departments set ? where ?", [
+            { total_sales: total_department_sales },
+            { department_name: department }
+        ], function(err, res) {
+        });
+
+    });
     connection.query("update products set ? where ?", [
-            { stock_quantity: new_quantity },
+            { stock_quantity: new_quantity, product_sales: total_sales },
             { item_id: id }
         ],
         function(err, res) {
             console.log("Purchase complete; database updated.");
             console.log(`'Grats. Your total is $${(price*quantity_purchased)}.`);
         })
-
 }
 
 
